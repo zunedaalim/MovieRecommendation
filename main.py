@@ -1,6 +1,8 @@
+import os
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request
+from flask_cors import CORS
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import json
@@ -8,6 +10,7 @@ import bs4 as bs
 import urllib.request
 from urllib.request import Request, urlopen
 import pickle
+import traceback
 
 # Load the NLP model and TF-IDF vectorizer from disk
 filename = 'nlp_model.pkl'
@@ -46,9 +49,8 @@ def rcmd(m):
         lst = lst[1:11]
         return [data['movie_title'][a] for a in (x[0] for x in lst)]
 
+
 # Converting list of strings to a list (eg. "["abc","def"]" to ["abc","def"])
-
-
 def convert_to_list(my_list):
     try:
         return json.loads(my_list)
@@ -62,6 +64,7 @@ def get_suggestions():
 
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for the app
 
 
 @app.route("/")
@@ -164,9 +167,10 @@ def recommend():
                                reviews=movie_reviews, casts=casts, cast_details=cast_details)
 
     except Exception as e:
-        print("Error in recommend route:", e)
+        print("Error in recommend route:", traceback.format_exc())
         return "Internal Server Error", 500
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
