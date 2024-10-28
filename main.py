@@ -18,6 +18,7 @@ except FileNotFoundError:
     print("Model or vectorizer file not found!")
     clf, vectorizer = None, None
 
+
 def create_similarity():
     data = pd.read_csv('main_data.csv')
     # Creating a count matrix
@@ -26,6 +27,7 @@ def create_similarity():
     # Creating a similarity score matrix
     similarity = cosine_similarity(count_matrix)
     return data, similarity
+
 
 def rcmd(m):
     m = m.lower()
@@ -40,27 +42,34 @@ def rcmd(m):
         i = data.loc[data['movie_title'] == m].index[0]
         lst = list(enumerate(similarity[i]))
         lst = sorted(lst, key=lambda x: x[1], reverse=True)
-        lst = lst[1:11]  # Exclude first item since it is the requested movie itself
+        # Exclude first item since it is the requested movie itself
+        lst = lst[1:11]
         return [data['movie_title'][a] for a in (x[0] for x in lst)]
 
 # Converting list of strings to a list (eg. "["abc","def"]" to ["abc","def"])
+
+
 def convert_to_list(my_list):
     try:
         return json.loads(my_list)
     except json.JSONDecodeError:
         return []
 
+
 def get_suggestions():
     data = pd.read_csv('main_data.csv')
     return list(data['movie_title'].str.capitalize())
 
+
 app = Flask(__name__)
+
 
 @app.route("/")
 @app.route("/home")
 def home():
     suggestions = get_suggestions()
     return render_template('home.html', suggestions=suggestions)
+
 
 @app.route("/similarity", methods=["POST"])
 def similarity():
@@ -70,6 +79,7 @@ def similarity():
         return rc
     else:
         return "---".join(rc)
+
 
 @app.route("/recommend", methods=["POST"])
 def recommend():
@@ -113,19 +123,24 @@ def recommend():
 
         # Rendering the string to python string
         for i in range(len(cast_bios)):
-            cast_bios[i] = cast_bios[i].replace(r'\n', '\n').replace(r'\"', '\"')
+            cast_bios[i] = cast_bios[i].replace(
+                r'\n', '\n').replace(r'\"', '\"')
 
         # Combining multiple lists as a dictionary which can be passed to the HTML file
-        movie_cards = {rec_posters[i]: rec_movies[i] for i in range(len(rec_posters))}
-        casts = {cast_names[i]: [cast_ids[i], cast_chars[i], cast_profiles[i]] for i in range(len(cast_profiles))}
-        cast_details = {cast_names[i]: [cast_ids[i], cast_profiles[i], cast_bdays[i], cast_places[i], cast_bios[i]] for i in range(len(cast_places))}
+        movie_cards = {rec_posters[i]: rec_movies[i]
+                       for i in range(len(rec_posters))}
+        casts = {cast_names[i]: [cast_ids[i], cast_chars[i],
+                                 cast_profiles[i]] for i in range(len(cast_profiles))}
+        cast_details = {cast_names[i]: [cast_ids[i], cast_profiles[i], cast_bdays[i],
+                                        cast_places[i], cast_bios[i]] for i in range(len(cast_places))}
 
         # Web scraping to get user reviews from IMDb site
         url = f'https://www.imdb.com/title/{imdb_id}/reviews?ref_=tt_ov_rt'
         req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         sauce = urlopen(req).read()
         soup = bs.BeautifulSoup(sauce, 'lxml')
-        soup_result = soup.find_all("div", {"class": "text show-more__control"})
+        soup_result = soup.find_all(
+            "div", {"class": "text show-more__control"})
 
         reviews_list = []  # List of reviews
         reviews_status = []  # List of comments (good or bad)
@@ -139,17 +154,19 @@ def recommend():
                 reviews_status.append('Good' if pred else 'Bad')
 
         # Combining reviews and comments into a dictionary
-        movie_reviews = {reviews_list[i]: reviews_status[i] for i in range(len(reviews_list))}
+        movie_reviews = {reviews_list[i]: reviews_status[i]
+                         for i in range(len(reviews_list))}
 
         # Passing all the data to the HTML file
         return render_template('recommend.html', title=title, poster=poster, overview=overview,
                                vote_average=vote_average, vote_count=vote_count, release_date=release_date,
                                runtime=runtime, status=status, genres=genres, movie_cards=movie_cards,
                                reviews=movie_reviews, casts=casts, cast_details=cast_details)
-    
+
     except Exception as e:
         print("Error in recommend route:", e)
         return "Internal Server Error", 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
