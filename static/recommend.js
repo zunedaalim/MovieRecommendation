@@ -54,7 +54,7 @@ function load_details(my_api_key, title) {
 function movie_recs(movie_title, movie_id, my_api_key) {
   $.ajax({
     type: "POST",
-    url: "https://movierecommendationbyzuned.streamlit.app/similarity",
+    url: "https://movierecommendation-sbjn.onrender.com/similarity",
     data: { name: movie_title },
     success: function (recs) {
       if (recs === "Sorry! The movie you requested is not in our database.") {
@@ -145,7 +145,7 @@ async function show_details(
     $.ajax({
       type: "POST",
       data: details,
-      url: "https://movierecommendationbyzuned.streamlit.app/recommend",
+      url: "https://movierecommendation-sbjn.onrender.com/recommend",
       dataType: "html",
       complete: function () {
         $("#loader").delay(500).fadeOut();
