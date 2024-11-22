@@ -12,11 +12,10 @@ from urllib.request import Request, urlopen
 import pickle
 import traceback
 
-# Load the NLP model and TF-IDF vectorizer from disk
 filename = 'nlp_model.pkl'
 try:
     clf = pickle.load(open(filename, 'rb'))
-    vectorizer = pickle.load(open('transform.pkl', 'rb'))
+    vectorizer = pickle.load(open('tranform.pkl', 'rb'))
 except FileNotFoundError:
     print("Model or vectorizer file not found!")
     clf, vectorizer = None, None
@@ -49,8 +48,9 @@ def rcmd(m):
         lst = lst[1:11]
         return [data['movie_title'][a] for a in (x[0] for x in lst)]
 
-
 # Converting list of strings to a list (eg. "["abc","def"]" to ["abc","def"])
+
+
 def convert_to_list(my_list):
     try:
         return json.loads(my_list)
@@ -64,7 +64,6 @@ def get_suggestions():
 
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for the app
 
 
 @app.route("/")
@@ -138,20 +137,26 @@ def recommend():
                                         cast_places[i], cast_bios[i]] for i in range(len(cast_places))}
 
         # Web scraping to get user reviews from IMDb site
+
         url = f'https://www.imdb.com/title/{imdb_id}/reviews?ref_=tt_ov_rt'
         req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         sauce = urlopen(req).read()
         soup = bs.BeautifulSoup(sauce, 'lxml')
-        soup_result = soup.find_all(
-            "div", {"class": "text show-more__control"})
 
+        soup_result = soup.find_all(
+            "div", {"class": "ipc-html-content-inner-div"})
+
+        print(soup_result)
         reviews_list = []  # List of reviews
         reviews_status = []  # List of comments (good or bad)
+
         for reviews in soup_result:
             if reviews.string:
+
                 reviews_list.append(reviews.string)
                 # Passing the review to our model
                 movie_review_list = np.array([reviews.string])
+                print("reviews: ", reviews.string)
                 movie_vector = vectorizer.transform(movie_review_list)
                 pred = clf.predict(movie_vector)
                 reviews_status.append('Good' if pred else 'Bad')
@@ -167,7 +172,7 @@ def recommend():
                                reviews=movie_reviews, casts=casts, cast_details=cast_details)
 
     except Exception as e:
-        print("Error in recommend route:", traceback.format_exc())
+        print("Error in recommend route:", e)
         return "Internal Server Error", 500
 
 
