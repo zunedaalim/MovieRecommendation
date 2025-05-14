@@ -122,31 +122,6 @@ The application is built with a Python Flask backend and a simple HTML/JS fronte
 4.  Type a movie name in the search bar (autocomplete will suggest movies) and click "Search".
 5.  View the recommendations and sentiment analysis results.
 
-## File Structure 
-.
-├── static/
-│ ├── css/
-│ │ └── style.css
-│ └── js/
-│ ├── autocomplete.js
-│ └── recommens.js
-├── templates/
-│ ├── home.html
-│ └── recommend.html
-├── Preprocessing1.ipynb
-├── Preprocessing2.ipynb
-├── Preprocessing3.ipynb
-├── Preprocessing4.ipynb
-├── Sentiments.ipynb
-├── main_data.csv # Processed movie data
-├── nlp_model.pkl # Trained sentiment model
-├── tranform.pkl # Trained TF-IDF vectorizer
-├── movie_metadata.csv # Initial dataset
-├── credits.csv # Initial dataset
-├── reviews.txt # Initial dataset for sentiment
-├── main.py # Flask application
-└── README.md
-
       
 ## Future Improvements
 
